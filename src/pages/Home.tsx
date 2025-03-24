@@ -11,7 +11,7 @@ const Home = () => {
       <section className="relative bg-gradient-to-b from-background to-muted overflow-hidden">
         <div className="container py-16 md:py-24 relative z-10">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            <div className="space-y-6">
+            <div className="space-y-6 animate-fade-in">
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold leading-tight">
                 <span className="block">Professional Services</span>
                 <span className="text-primary">At Your Doorstep</span>
@@ -20,22 +20,22 @@ const Home = () => {
                 Connect with top-rated service providers for car washing, home cleaning, and personal care services - all in one platform.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 pt-4">
-                <Button asChild size="lg">
+                <Button asChild size="lg" className="transition-transform hover:scale-105">
                   <Link to="/booking">Book a Service</Link>
                 </Button>
-                <Button variant="outline" size="lg" asChild>
+                <Button variant="outline" size="lg" asChild className="transition-transform hover:scale-105">
                   <Link to="/services">Browse Services</Link>
                 </Button>
               </div>
             </div>
-            <div className="relative h-[400px] hidden md:block">
+            <div className="relative h-[400px] hidden md:block animate-scale-in">
               <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[450px] h-[300px] bg-primary/10 rounded-2xl">
                 <div className="absolute -top-6 -right-6 w-[120px] h-[120px] bg-primary/20 rounded-xl"></div>
                 <div className="absolute -bottom-8 -left-8 w-[160px] h-[160px] bg-primary/15 rounded-xl"></div>
               </div>
               <div className="absolute inset-0 flex items-center justify-center">
                 <img 
-                  src="/placeholder.svg" 
+                  src="https://images.unsplash.com/photo-1581091226825-a6a2a5aee158" 
                   alt="Service Provider" 
                   className="h-[300px] w-auto object-cover rounded-xl shadow-lg"
                 />
@@ -48,7 +48,7 @@ const Home = () => {
       {/* Services Section */}
       <section className="py-16 bg-background">
         <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
             <h2 className="text-3xl font-bold mb-4">Our Services</h2>
             <p className="text-muted-foreground">
               Choose from our wide range of professional services designed to make your life easier
@@ -61,18 +61,24 @@ const Home = () => {
               description="Professional car cleaning services for all vehicle types. Interior and exterior options available."
               icon={<Car className="h-8 w-8" />}
               link="/services?category=car-wash"
+              imageUrl="https://images.unsplash.com/photo-1552809546-bb5d0ebc907e?auto=format&fit=crop&q=80"
+              animationDelay="delay-100"
             />
             <ServiceCard 
               title="Home Cleaning"
               description="Expert house cleaning services from trained professionals, using eco-friendly products."
               icon={<HomeIcon className="h-8 w-8" />}
               link="/services?category=home-cleaning"
+              imageUrl="https://images.unsplash.com/photo-1581578731548-c64695cc6952?auto=format&fit=crop&q=80"
+              animationDelay="delay-300"
             />
             <ServiceCard 
               title="Personal Care"
               description="Self-care services including haircuts, massages, manicures, and more."
               icon={<User className="h-8 w-8" />}
               link="/services?category=personal-care"
+              imageUrl="https://images.unsplash.com/photo-1560750588-73207b1ef5b8?auto=format&fit=crop&q=80"
+              animationDelay="delay-500"
             />
           </div>
         </div>
@@ -81,10 +87,10 @@ const Home = () => {
       {/* How It Works Section */}
       <section className="py-16 bg-muted/30">
         <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
             <h2 className="text-3xl font-bold mb-4">How It Works</h2>
             <p className="text-muted-foreground">
-              Getting started with ServeConnect is quick and easy
+              Getting started with MakingBetter is quick and easy
             </p>
           </div>
 
@@ -93,21 +99,25 @@ const Home = () => {
               number={1}
               title="Choose a Service"
               description="Browse through our wide range of professional services"
+              animationDelay="delay-100"
             />
             <StepCard 
               number={2}
               title="Select a Provider"
               description="Pick from our vetted, top-rated service professionals"
+              animationDelay="delay-200"
             />
             <StepCard 
               number={3}
               title="Schedule Appointment"
               description="Choose a date and time that works best for you"
+              animationDelay="delay-300"
             />
             <StepCard 
               number={4}
               title="Enjoy the Service"
               description="Relax while our professionals take care of everything"
+              animationDelay="delay-400"
             />
           </div>
         </div>
@@ -116,7 +126,7 @@ const Home = () => {
       {/* Testimonials Section */}
       <section className="py-16 bg-background">
         <div className="container">
-          <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="text-center max-w-3xl mx-auto mb-12 animate-fade-in">
             <h2 className="text-3xl font-bold mb-4">What Our Users Say</h2>
             <p className="text-muted-foreground">
               Hear from customers who have experienced our services
@@ -129,18 +139,21 @@ const Home = () => {
               role="Car Owner"
               quote="The car wash service was excellent. My car hasn't looked this good since I bought it!"
               rating={5}
+              animationDelay="delay-100"
             />
             <TestimonialCard 
               name="Sarah Johnson"
               role="Homeowner"
               quote="The cleaning team was professional, thorough, and finished ahead of schedule. Highly recommend!"
               rating={5}
+              animationDelay="delay-300"
             />
             <TestimonialCard 
               name="Michael Brown"
               role="Regular Customer"
               quote="I've tried all their services and have never been disappointed. Their personal care services are the best!"
               rating={4}
+              animationDelay="delay-500"
             />
           </div>
         </div>
@@ -149,12 +162,12 @@ const Home = () => {
       {/* CTA Section */}
       <section className="py-16 bg-primary text-primary-foreground">
         <div className="container">
-          <div className="max-w-3xl mx-auto text-center">
+          <div className="max-w-3xl mx-auto text-center animate-scale-in">
             <h2 className="text-3xl font-bold mb-4">Ready to Transform Your Experience?</h2>
             <p className="mb-8 opacity-90">
               Join thousands of satisfied customers who have simplified their lives with our services
             </p>
-            <Button asChild size="lg" variant="secondary">
+            <Button asChild size="lg" variant="secondary" className="transition-transform hover:scale-105">
               <Link to="/booking">Book Your First Service</Link>
             </Button>
           </div>
@@ -169,11 +182,20 @@ interface ServiceCardProps {
   description: string;
   icon: React.ReactNode;
   link: string;
+  imageUrl: string;
+  animationDelay?: string;
 }
 
-const ServiceCard = ({ title, description, icon, link }: ServiceCardProps) => {
+const ServiceCard = ({ title, description, icon, link, imageUrl, animationDelay }: ServiceCardProps) => {
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-md">
+    <Card className={`group overflow-hidden transition-all hover:shadow-md animate-fade-in ${animationDelay}`}>
+      <div className="w-full h-48 overflow-hidden">
+        <img 
+          src={imageUrl} 
+          alt={title} 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+        />
+      </div>
       <CardContent className="p-6">
         <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10 text-primary">
           {icon}
@@ -196,12 +218,13 @@ interface StepCardProps {
   number: number;
   title: string;
   description: string;
+  animationDelay?: string;
 }
 
-const StepCard = ({ number, title, description }: StepCardProps) => {
+const StepCard = ({ number, title, description, animationDelay }: StepCardProps) => {
   return (
-    <div className="flex flex-col items-center text-center">
-      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold mb-4">
+    <div className={`flex flex-col items-center text-center animate-fade-in ${animationDelay}`}>
+      <div className="flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground text-xl font-bold mb-4 transition-transform hover:scale-110">
         {number}
       </div>
       <h3 className="text-lg font-semibold mb-2">{title}</h3>
@@ -215,11 +238,12 @@ interface TestimonialCardProps {
   role: string;
   quote: string;
   rating: number;
+  animationDelay?: string;
 }
 
-const TestimonialCard = ({ name, role, quote, rating }: TestimonialCardProps) => {
+const TestimonialCard = ({ name, role, quote, rating, animationDelay }: TestimonialCardProps) => {
   return (
-    <Card>
+    <Card className={`hover:shadow-md transition-all animate-fade-in ${animationDelay}`}>
       <CardContent className="p-6">
         <div className="flex items-center mb-4">
           {Array.from({ length: 5 }).map((_, i) => (

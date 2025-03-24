@@ -1,6 +1,6 @@
 
 import { Link } from "react-router-dom";
-import { Facebook, Instagram, Linkedin, Twitter } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Twitter, MapPin, Phone, Mail } from "lucide-react";
 
 const Footer = () => {
   return (
@@ -39,13 +39,31 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>hello@makingbetter.com.au</li>
-              <li>+1 (555) 123-4567</li>
+              <li className="flex items-start gap-2">
+                <MapPin className="h-4 w-4 shrink-0 mt-0.5" />
+                <span>3/27 Crisp Circuit, Bruce ACT 2617</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Phone className="h-4 w-4 shrink-0" />
+                <span>0452 081 226</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Mail className="h-4 w-4 shrink-0" />
+                <span>hello@makingbetter.com.au</span>
+              </li>
               <li className="pt-2 flex items-center gap-4">
-                <a href="#" className="text-foreground hover:text-primary"><Facebook className="h-5 w-5" /></a>
-                <a href="#" className="text-foreground hover:text-primary"><Twitter className="h-5 w-5" /></a>
-                <a href="#" className="text-foreground hover:text-primary"><Instagram className="h-5 w-5" /></a>
-                <a href="#" className="text-foreground hover:text-primary"><Linkedin className="h-5 w-5" /></a>
+                <a href="#" className="text-foreground hover:text-primary transition-colors">
+                  <Facebook className="h-5 w-5" />
+                </a>
+                <a href="#" className="text-foreground hover:text-primary transition-colors">
+                  <Twitter className="h-5 w-5" />
+                </a>
+                <a href="#" className="text-foreground hover:text-primary transition-colors">
+                  <Instagram className="h-5 w-5" />
+                </a>
+                <a href="#" className="text-foreground hover:text-primary transition-colors">
+                  <Linkedin className="h-5 w-5" />
+                </a>
               </li>
             </ul>
           </div>
@@ -56,8 +74,8 @@ const Footer = () => {
             © {new Date().getFullYear()} MakingBetter. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <a href="#" className="hover:text-foreground">Privacy Policy</a>
-            <a href="#" className="hover:text-foreground">Terms of Service</a>
+            <a href="#" className="hover:text-foreground transition-colors">Privacy Policy</a>
+            <a href="#" className="hover:text-foreground transition-colors">Terms of Service</a>
           </div>
         </div>
       </div>
