@@ -9,8 +9,8 @@ const Footer = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div className="space-y-4">
             <Link to="/" className="flex items-center gap-2 font-bold text-lg">
-              <span className="inline-block bg-primary text-primary-foreground p-1 rounded-md">SC</span>
-              ServeConnect
+              <span className="inline-block bg-primary text-primary-foreground p-1 rounded-md">MB</span>
+              MakingBetter
             </Link>
             <p className="text-muted-foreground text-sm max-w-xs">
               Connecting you with top-quality service providers for car wash, home cleaning, and personal care needs.
@@ -39,7 +39,7 @@ const Footer = () => {
           <div>
             <h3 className="text-sm font-semibold mb-4">Contact</h3>
             <ul className="space-y-2 text-sm text-muted-foreground">
-              <li>hello@serveconnect.com</li>
+              <li>hello@makingbetter.com.au</li>
               <li>+1 (555) 123-4567</li>
               <li className="pt-2 flex items-center gap-4">
                 <a href="#" className="text-foreground hover:text-primary"><Facebook className="h-5 w-5" /></a>
@@ -53,7 +53,7 @@ const Footer = () => {
         
         <div className="border-t mt-8 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <p className="text-sm text-muted-foreground">
-            © {new Date().getFullYear()} ServeConnect. All rights reserved.
+            © {new Date().getFullYear()} MakingBetter. All rights reserved.
           </p>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <a href="#" className="hover:text-foreground">Privacy Policy</a>

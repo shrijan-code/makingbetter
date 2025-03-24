@@ -24,7 +24,7 @@ const Navbar = () => {
           <span className="bg-primary text-primary-foreground p-1 rounded-md">
             <Smartphone className="h-6 w-6" />
           </span>
-          <span>ServeConnect</span>
+          <span>MakingBetter</span>
         </Link>
 
         {/* Mobile Menu Toggle */}
