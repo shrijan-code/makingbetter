@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -18,8 +17,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { format } from "date-fns";
 import { toast } from "@/components/ui/use-toast";
 import { Check, ChevronLeft, ChevronRight } from "lucide-react";
+import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 
-// Mock data (same as in other pages)
 const services = [
   { id: 1, name: "Premium Car Wash", category: "car-wash", price: 49.99 },
   { id: 2, name: "Quick Car Wash", category: "car-wash", price: 19.99 },
@@ -77,7 +76,6 @@ const providers = [
   },
 ];
 
-// Available time slots
 const timeSlots = [
   "9:00 AM", "10:00 AM", "11:00 AM", "12:00 PM", 
   "1:00 PM", "2:00 PM", "3:00 PM", "4:00 PM", "5:00 PM"
@@ -98,8 +96,8 @@ const Booking = () => {
     address: "",
     notes: "",
   });
+  const { submitBookingEmail, isSubmitting } = useEmailSubmission();
 
-  // Parse URL parameters
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const serviceId = params.get("service");
@@ -107,38 +105,71 @@ const Booking = () => {
     
     if (serviceId && !isNaN(parseInt(serviceId))) {
       setSelectedService(parseInt(serviceId));
-      setCurrentStep(serviceId ? 2 : 1); // Skip to provider selection if service is pre-selected
+      setCurrentStep(serviceId ? 2 : 1);
     }
     
     if (providerId && !isNaN(parseInt(providerId))) {
       setSelectedProvider(parseInt(providerId));
-      setCurrentStep(providerId ? 3 : currentStep); // Skip to date selection if provider is pre-selected
+      setCurrentStep(providerId ? 3 : currentStep);
     }
   }, [location.search]);
 
-  // Get filtered providers based on selected service
   const filteredProviders = selectedService 
     ? providers.filter(provider => provider.services.includes(selectedService))
     : providers;
 
-  // Handle form submission
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    toast({
-      title: "Booking Confirmed!",
-      description: `Your appointment has been scheduled for ${format(selectedDate!, "MMMM d, yyyy")} at ${selectedTime}.`,
-    });
+    const service = services.find(s => s.id === selectedService);
+    const provider = providers.find(p => p.id === selectedProvider);
     
-    // Reset form and navigate to home
-    setTimeout(() => {
-      navigate("/");
-    }, 2000);
+    if (!service || !provider || !selectedDate || !selectedTime) {
+      toast({
+        title: "Missing Information",
+        description: "Please ensure all booking details are complete.",
+        variant: "destructive"
+      });
+      return;
+    }
+    
+    const emailData = {
+      service: service.name,
+      servicePrice: service.price,
+      provider: provider.name,
+      date: format(selectedDate, "MMMM d, yyyy"),
+      time: selectedTime,
+      customerName: contactInfo.name,
+      customerEmail: contactInfo.email,
+      customerPhone: contactInfo.phone,
+      customerAddress: contactInfo.address,
+      customerNotes: contactInfo.notes || "None provided"
+    };
+    
+    try {
+      await submitBookingEmail(emailData);
+      
+      toast({
+        title: "Booking Confirmed!",
+        description: `Your appointment has been scheduled for ${format(selectedDate, "MMMM d, yyyy")} at ${selectedTime}.`,
+      });
+      
+      setTimeout(() => {
+        navigate("/");
+      }, 2000);
+      
+    } catch (error) {
+      console.error("Error submitting booking:", error);
+      toast({
+        title: "Booking Error",
+        description: "There was a problem submitting your booking. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
     <div className="container py-8 md:py-12 max-w-5xl">
-      {/* Page Header */}
       <div className="mb-8 text-center">
         <h1 className="text-3xl md:text-4xl font-bold mb-4">Book a Service</h1>
         <p className="text-muted-foreground max-w-2xl mx-auto">
@@ -146,7 +177,6 @@ const Booking = () => {
         </p>
       </div>
 
-      {/* Progress Steps */}
       <div className="mb-8">
         <div className="flex items-center justify-between max-w-lg mx-auto relative">
           <div className="absolute top-1/2 h-0.5 w-full bg-muted -z-10"></div>
@@ -171,9 +201,7 @@ const Booking = () => {
         </div>
       </div>
 
-      {/* Booking Steps */}
       <div className="mb-8">
-        {/* Step 1: Select Service */}
         {currentStep === 1 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-semibold mb-4">Select a Service</h2>
@@ -213,7 +241,6 @@ const Booking = () => {
           </div>
         )}
 
-        {/* Step 2: Select Provider */}
         {currentStep === 2 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -268,7 +295,6 @@ const Booking = () => {
           </div>
         )}
 
-        {/* Step 3: Select Date and Time */}
         {currentStep === 3 && (
           <div className="space-y-6">
             <div className="flex items-center justify-between">
@@ -333,7 +359,6 @@ const Booking = () => {
           </div>
         )}
 
-        {/* Step 4: Confirm Booking */}
         {currentStep === 4 && (
           <form onSubmit={handleSubmit} className="space-y-6">
             <div className="flex items-center justify-between">
