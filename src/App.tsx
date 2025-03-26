@@ -13,6 +13,7 @@ import Providers from "@/pages/Providers";
 import Booking from "@/pages/Booking";
 import Profile from "@/pages/Profile";
 import NotFound from "@/pages/NotFound";
+import Contact from "@/pages/Contact";
 
 // Layout
 import Layout from "@/components/layout/Layout";
@@ -33,6 +34,7 @@ const App = () => (
               <Route path="/providers" element={<Providers />} />
               <Route path="/booking" element={<Booking />} />
               <Route path="/profile" element={<Profile />} />
+              <Route path="/contact" element={<Contact />} />
               <Route path="*" element={<NotFound />} />
             </Route>
           </Routes>

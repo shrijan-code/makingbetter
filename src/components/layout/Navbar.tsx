@@ -10,7 +10,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
-import { Car, Smartphone, Home as HomeIcon, User } from "lucide-react";
+import { Car, Smartphone, Home as HomeIcon, User, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -114,6 +114,14 @@ const Navbar = () => {
                 </NavigationMenuLink>
               </Link>
             </NavigationMenuItem>
+            <NavigationMenuItem>
+              <Link to="/contact">
+                <NavigationMenuLink className={navigationMenuTriggerStyle()}>
+                  <MessageSquare className="mr-2 h-4 w-4" />
+                  Contact
+                </NavigationMenuLink>
+              </Link>
+            </NavigationMenuItem>
           </NavigationMenuList>
         </NavigationMenu>
 
@@ -134,6 +142,10 @@ const Navbar = () => {
               <Link to="/booking" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent" onClick={() => setIsMenuOpen(false)}>
                 <span>Book Now</span>
               </Link>
+              <Link to="/contact" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent" onClick={() => setIsMenuOpen(false)}>
+                <MessageSquare className="h-4 w-4" />
+                <span>Contact</span>
+              </Link>
               <Link to="/profile" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent" onClick={() => setIsMenuOpen(false)}>
                 <User className="h-4 w-4" />
                 <span>Profile</span>
@@ -143,6 +155,12 @@ const Navbar = () => {
         )}
 
         <div className="hidden md:flex items-center gap-4">
+          <Link to="/contact">
+            <Button variant="outline" size="sm">
+              <MessageSquare className="mr-2 h-4 w-4" />
+              Contact
+            </Button>
+          </Link>
           <Link to="/profile">
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />
