@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -17,6 +17,7 @@ import {
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(2, { message: 'Name must be at least 2 characters' }),
@@ -34,7 +35,7 @@ const formSchema = z.object({
 type RegisterFormValues = z.infer<typeof formSchema>;
 
 const Register: React.FC = () => {
-  const { register, loading } = useAuth();
+  const { register, loading, user } = useAuth();
   const navigate = useNavigate();
   
   const form = useForm<RegisterFormValues>({
@@ -48,12 +49,20 @@ const Register: React.FC = () => {
     },
   });
 
+  // Redirect if already logged in
+  useEffect(() => {
+    if (user) {
+      navigate('/dashboard');
+    }
+  }, [user, navigate]);
+
   const onSubmit = async (data: RegisterFormValues) => {
     try {
       await register(data.email, data.password, data.name, data.role);
       navigate('/dashboard');
     } catch (error) {
       console.error('Registration error:', error);
+      // Error is already handled in the Auth context with toast
     }
   };
 
@@ -156,7 +165,13 @@ const Register: React.FC = () => {
                 )}
               />
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Creating account...' : 'Create account'}
+                {loading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating account...
+                  </>
+                ) : (
+                  'Create account'
+                )}
               </Button>
             </form>
           </Form>
