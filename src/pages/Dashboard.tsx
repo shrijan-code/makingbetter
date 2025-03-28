@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -24,10 +23,10 @@ interface Booking {
   service: {
     title: string;
   } | null;
-  provider: {
+  provider?: {
     name: string;
   } | null;
-  client: {
+  client?: {
     name: string;
   } | null;
   date: string;
@@ -99,7 +98,17 @@ const Dashboard: React.FC = () => {
             .eq('provider_id', user.id);
             
           if (bookingsError) throw bookingsError;
-          setBookings(bookingsData as Booking[] || []);
+          
+          // Transform data to match Booking interface
+          const formattedBookings: Booking[] = (bookingsData || []).map(booking => ({
+            id: booking.id,
+            date: booking.date,
+            status: booking.status,
+            service: booking.service,
+            client: booking.client
+          }));
+          
+          setBookings(formattedBookings);
         } else {
           // For clients, fetch bookings with provider info
           const { data: bookingsData, error: bookingsError } = await supabase
@@ -114,7 +123,17 @@ const Dashboard: React.FC = () => {
             .eq('client_id', user.id);
             
           if (bookingsError) throw bookingsError;
-          setBookings(bookingsData as Booking[] || []);
+          
+          // Transform data to match Booking interface
+          const formattedBookings: Booking[] = (bookingsData || []).map(booking => ({
+            id: booking.id,
+            date: booking.date,
+            status: booking.status,
+            service: booking.service,
+            provider: booking.provider
+          }));
+          
+          setBookings(formattedBookings);
         }
         
         // If client, fetch recommended providers
