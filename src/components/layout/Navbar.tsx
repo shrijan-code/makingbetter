@@ -1,4 +1,3 @@
-
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
@@ -10,7 +9,7 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
-import { Car, Smartphone, Home as HomeIcon, User, MessageSquare } from "lucide-react";
+import { Clock, Briefcase, Home as HomeIcon, User, MessageSquare, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 
@@ -72,30 +71,30 @@ const Navbar = () => {
                       className="flex h-full w-full select-none flex-col justify-end rounded-md bg-gradient-to-b from-muted/50 to-muted p-6 no-underline outline-none focus:shadow-md"
                     >
                       <div className="mb-2 mt-4 text-lg font-medium">
-                        All Services
+                        All Premium Services
                       </div>
                       <p className="text-sm leading-tight text-muted-foreground">
-                        Browse all the services we offer
+                        Browse all our exclusive services
                       </p>
                     </Link>
                   </li>
                   <ServiceItem
-                    to="/services?category=car-wash"
-                    title="Car Wash"
-                    description="Professional car cleaning services"
-                    icon={<Car className="h-4 w-4" />}
+                    to="/services?category=concierge"
+                    title="Concierge Services"
+                    description="Priority errands and personal assistance"
+                    icon={<Clock className="h-4 w-4" />}
                   />
                   <ServiceItem
-                    to="/services?category=home-cleaning"
-                    title="Home Cleaning"
-                    description="Top-rated cleaning professionals"
+                    to="/services?category=home-luxury"
+                    title="Home Luxury"
+                    description="Premium home services and experiences"
                     icon={<HomeIcon className="h-4 w-4" />}
                   />
                   <ServiceItem
-                    to="/services?category=personal-care"
-                    title="Personal Care"
-                    description="Self-care and wellness services"
-                    icon={<User className="h-4 w-4" />}
+                    to="/services?category=professional"
+                    title="Professional Services"
+                    description="Executive and personal expertise"
+                    icon={<Briefcase className="h-4 w-4" />}
                   />
                 </ul>
               </NavigationMenuContent>
@@ -155,12 +154,6 @@ const Navbar = () => {
         )}
 
         <div className="hidden md:flex items-center gap-4">
-          <Link to="/contact">
-            <Button variant="outline" size="sm">
-              <MessageSquare className="mr-2 h-4 w-4" />
-              Contact
-            </Button>
-          </Link>
           <Link to="/profile">
             <Button variant="ghost" size="icon">
               <User className="h-5 w-5" />

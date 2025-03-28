@@ -5,92 +5,92 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
-import { Car, Home as HomeIcon, User, Search, Star, ArrowRight } from "lucide-react";
+import { Car, Home as HomeIcon, User, Search, Star, ArrowRight, Clock, PenTool, Briefcase } from "lucide-react";
 
 // Service types
-type ServiceCategory = "car-wash" | "home-cleaning" | "personal-care" | "all";
+type ServiceCategory = "concierge" | "home-luxury" | "professional" | "all";
 
-// Mock data for services
+// Premium services for wealthy clients
 const services = [
   {
     id: 1,
-    name: "Premium Car Wash",
-    category: "car-wash",
-    description: "Complete interior and exterior cleaning with premium products",
-    price: 49.99,
-    rating: 4.8,
+    name: "Personal Chauffeur",
+    category: "concierge",
+    description: "Dedicated driver service with luxury vehicles for all your transportation needs",
+    price: 120.00,
+    rating: 4.9,
     image: "/placeholder.svg",
   },
   {
     id: 2,
-    name: "Quick Car Wash",
-    category: "car-wash",
-    description: "Fast exterior wash and wipe down",
-    price: 19.99,
-    rating: 4.5,
+    name: "Priority Errand Runner",
+    category: "concierge",
+    description: "Skip the lines with our VIP errand service - groceries, pharmacy, dry cleaning and more",
+    price: 85.00,
+    rating: 4.8,
     image: "/placeholder.svg",
   },
   {
     id: 3,
-    name: "Interior Detailing",
-    category: "car-wash",
-    description: "Deep cleaning of your car's interior, including seats and carpets",
-    price: 89.99,
+    name: "Event Concierge",
+    category: "concierge",
+    description: "Access to exclusive events, sold-out tickets, and VIP reservations through our insider connections",
+    price: 150.00,
     rating: 4.9,
     image: "/placeholder.svg",
   },
   {
     id: 4,
-    name: "Standard Home Cleaning",
-    category: "home-cleaning",
-    description: "Complete cleaning of living areas, kitchen, and bathrooms",
-    price: 79.99,
-    rating: 4.7,
+    name: "Luxury Home Cleaning",
+    category: "home-luxury",
+    description: "White-glove cleaning service with premium eco-friendly products and attention to detail",
+    price: 180.00,
+    rating: 4.9,
     image: "/placeholder.svg",
   },
   {
     id: 5,
-    name: "Deep Home Cleaning",
-    category: "home-cleaning",
-    description: "Thorough cleaning of all areas, including hard-to-reach places",
-    price: 129.99,
-    rating: 4.9,
+    name: "Private Chef Experience",
+    category: "home-luxury",
+    description: "Personalized gourmet meals prepared in your home by experienced chefs using premium ingredients",
+    price: 250.00,
+    rating: 5.0,
     image: "/placeholder.svg",
   },
   {
     id: 6,
-    name: "Window Cleaning",
-    category: "home-cleaning",
-    description: "Professional cleaning of all windows inside and out",
-    price: 59.99,
-    rating: 4.6,
-    image: "/placeholder.svg",
-  },
-  {
-    id: 7,
-    name: "Haircut & Styling",
-    category: "personal-care",
-    description: "Professional haircut and styling by experienced stylists",
-    price: 39.99,
+    name: "Smart Home Setup & Maintenance",
+    category: "home-luxury",
+    description: "Complete smart home installation, configuration and troubleshooting by certified technicians",
+    price: 200.00,
     rating: 4.8,
     image: "/placeholder.svg",
   },
   {
+    id: 7,
+    name: "Executive Virtual Assistant",
+    category: "professional",
+    description: "Dedicated assistant for emails, scheduling, travel arrangements and administrative tasks",
+    price: 75.00,
+    rating: 4.7,
+    image: "/placeholder.svg",
+  },
+  {
     id: 8,
-    name: "Massage Therapy",
-    category: "personal-care",
-    description: "Relaxing full-body massage to relieve stress and tension",
-    price: 69.99,
-    rating: 4.9,
+    name: "Private Fitness Training",
+    category: "professional",
+    description: "Customized fitness sessions with certified trainers in the comfort of your home",
+    price: 120.00,
+    rating: 4.8,
     image: "/placeholder.svg",
   },
   {
     id: 9,
-    name: "Manicure & Pedicure",
-    category: "personal-care",
-    description: "Complete nail care service for hands and feet",
-    price: 49.99,
-    rating: 4.7,
+    name: "Personal Stylist & Shopper",
+    category: "professional",
+    description: "Wardrobe consultation, styling, and exclusive shopping assistance by fashion professionals",
+    price: 180.00,
+    rating: 4.9,
     image: "/placeholder.svg",
   },
 ];
@@ -106,7 +106,7 @@ const Services = () => {
     const params = new URLSearchParams(location.search);
     const category = params.get("category");
     
-    if (category && ["car-wash", "home-cleaning", "personal-care"].includes(category)) {
+    if (category && ["concierge", "home-luxury", "professional"].includes(category)) {
       setActiveCategory(category as ServiceCategory);
     } else {
       setActiveCategory("all");
@@ -139,9 +139,9 @@ const Services = () => {
     <div className="container py-8 md:py-12">
       {/* Page Header */}
       <div className="mb-8">
-        <h1 className="text-3xl md:text-4xl font-bold mb-4">Our Services</h1>
+        <h1 className="text-3xl md:text-4xl font-bold mb-4">Premium Services</h1>
         <p className="text-muted-foreground max-w-3xl">
-          Browse our selection of professional services designed to make your life easier and more enjoyable.
+          Discover our exclusive selection of high-quality services designed to save you time and enhance your lifestyle.
         </p>
       </div>
 
@@ -164,17 +164,17 @@ const Services = () => {
           <TabsTrigger value="all" className="flex gap-2">
             All Services
           </TabsTrigger>
-          <TabsTrigger value="car-wash" className="flex gap-2">
-            <Car className="h-4 w-4" />
-            Car Wash
+          <TabsTrigger value="concierge" className="flex gap-2">
+            <Clock className="h-4 w-4" />
+            Concierge Services
           </TabsTrigger>
-          <TabsTrigger value="home-cleaning" className="flex gap-2">
+          <TabsTrigger value="home-luxury" className="flex gap-2">
             <HomeIcon className="h-4 w-4" />
-            Home Cleaning
+            Home Luxury
           </TabsTrigger>
-          <TabsTrigger value="personal-care" className="flex gap-2">
-            <User className="h-4 w-4" />
-            Personal Care
+          <TabsTrigger value="professional" className="flex gap-2">
+            <Briefcase className="h-4 w-4" />
+            Professional Services
           </TabsTrigger>
         </TabsList>
 
