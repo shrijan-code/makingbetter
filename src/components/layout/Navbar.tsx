@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+
+import { Link, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { 
   NavigationMenu,
@@ -9,12 +10,20 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle
 } from "@/components/ui/navigation-menu";
-import { Clock, Briefcase, Home as HomeIcon, User, MessageSquare, Smartphone } from "lucide-react";
+import { Clock, Briefcase, Home as HomeIcon, User, MessageSquare, Smartphone, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const Navbar = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const { user, profile, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate('/');
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -145,23 +154,62 @@ const Navbar = () => {
                 <MessageSquare className="h-4 w-4" />
                 <span>Contact</span>
               </Link>
-              <Link to="/profile" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent" onClick={() => setIsMenuOpen(false)}>
-                <User className="h-4 w-4" />
-                <span>Profile</span>
-              </Link>
+              
+              {user ? (
+                <>
+                  <Link to="/dashboard" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent" onClick={() => setIsMenuOpen(false)}>
+                    <User className="h-4 w-4" />
+                    <span>Dashboard</span>
+                  </Link>
+                  <button 
+                    className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent text-left w-full" 
+                    onClick={() => {
+                      setIsMenuOpen(false);
+                      handleLogout();
+                    }}
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <Link to="/login" className="flex items-center gap-2 px-3 py-2 rounded-md hover:bg-accent" onClick={() => setIsMenuOpen(false)}>
+                  <User className="h-4 w-4" />
+                  <span>Sign in</span>
+                </Link>
+              )}
             </nav>
           </div>
         )}
 
         <div className="hidden md:flex items-center gap-4">
-          <Link to="/profile">
-            <Button variant="ghost" size="icon">
-              <User className="h-5 w-5" />
-            </Button>
-          </Link>
-          <Button asChild>
-            <Link to="/booking">Book Now</Link>
-          </Button>
+          {user ? (
+            <>
+              <Link to="/dashboard">
+                <Button variant="ghost" size="sm">
+                  Dashboard
+                </Button>
+              </Link>
+              <Button variant="ghost" size="icon" asChild>
+                <Link to="/profile">
+                  <User className="h-5 w-5" />
+                </Link>
+              </Button>
+              <Button variant="outline" size="sm" onClick={handleLogout}>
+                <LogOut className="h-4 w-4 mr-2" />
+                Logout
+              </Button>
+            </>
+          ) : (
+            <>
+              <Button variant="ghost" asChild>
+                <Link to="/login">Sign in</Link>
+              </Button>
+              <Button asChild>
+                <Link to="/register">Sign up</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>

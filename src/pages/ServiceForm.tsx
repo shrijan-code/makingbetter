@@ -20,16 +20,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { toast } from 'sonner';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import { Loader2 } from 'lucide-react';
 
-// Sample categories
+// Service categories
 const serviceCategories = [
-  { value: 'cleaning', label: 'Cleaning' },
-  { value: 'plumbing', label: 'Plumbing' },
-  { value: 'electrical', label: 'Electrical' },
-  { value: 'gardening', label: 'Gardening' },
-  { value: 'moving', label: 'Moving & Storage' },
-  { value: 'tech', label: 'Tech Support' },
-  { value: 'other', label: 'Other' },
+  { value: 'concierge', label: 'Concierge Services' },
+  { value: 'home-luxury', label: 'Home Luxury' },
+  { value: 'professional', label: 'Professional Services' },
 ];
 
 // Form schema
@@ -56,21 +55,11 @@ const formSchema = z.object({
 
 type ServiceFormValues = z.infer<typeof formSchema>;
 
-// Mock service data (would come from Supabase in a real app)
-const mockService = {
-  id: 's1',
-  title: 'Basic Plumbing',
-  category: 'plumbing',
-  description: 'Professional plumbing services for small repairs and installations.',
-  price: 75,
-  duration: 60,
-  location: 'Melbourne, VIC',
-};
-
 const ServiceForm: React.FC = () => {
   const { id } = useParams<{ id: string }>();
   const isEditing = !!id;
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   
   // Setup form with default values
@@ -88,43 +77,92 @@ const ServiceForm: React.FC = () => {
   
   // Load service data if editing
   useEffect(() => {
-    if (isEditing) {
-      // In a real app, fetch from Supabase
-      // Here we'll use mock data
-      setLoading(true);
-      setTimeout(() => {
-        form.reset({
-          title: mockService.title,
-          category: mockService.category,
-          description: mockService.description,
-          price: mockService.price,
-          duration: mockService.duration,
-          location: mockService.location,
-        });
-        setLoading(false);
-      }, 500);
-    }
-  }, [isEditing, form]);
+    const fetchService = async () => {
+      if (isEditing && id) {
+        setLoading(true);
+        try {
+          const { data, error } = await supabase
+            .from('services')
+            .select('*')
+            .eq('id', id)
+            .single();
+            
+          if (error) throw error;
+          
+          if (data) {
+            form.reset({
+              title: data.title,
+              category: data.category,
+              description: data.description,
+              price: data.price,
+              duration: data.duration,
+              location: data.location,
+            });
+          }
+        } catch (error) {
+          console.error('Error fetching service:', error);
+          toast.error('Failed to load service data');
+        } finally {
+          setLoading(false);
+        }
+      }
+    };
+    
+    fetchService();
+  }, [isEditing, id, form]);
   
   const onSubmit = async (data: ServiceFormValues) => {
+    if (!user) {
+      toast.error('You must be logged in to create or edit services');
+      return;
+    }
+    
     setLoading(true);
     
     try {
-      // In a real app, save to Supabase
-      // For demo, we'll just simulate an API call
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      toast.success(
-        isEditing 
-          ? 'Service updated successfully!' 
-          : 'Service created successfully!'
-      );
+      if (isEditing && id) {
+        // Update existing service
+        const { error } = await supabase
+          .from('services')
+          .update({
+            title: data.title,
+            category: data.category,
+            description: data.description,
+            price: data.price,
+            duration: data.duration,
+            location: data.location,
+            updated_at: new Date().toISOString()
+          })
+          .eq('id', id)
+          .eq('provider_id', user.id);
+          
+        if (error) throw error;
+        
+        toast.success('Service updated successfully!');
+      } else {
+        // Create new service
+        const { error } = await supabase
+          .from('services')
+          .insert({
+            provider_id: user.id,
+            title: data.title,
+            category: data.category,
+            description: data.description,
+            price: data.price,
+            duration: data.duration,
+            location: data.location
+          });
+          
+        if (error) throw error;
+        
+        toast.success('Service created successfully!');
+      }
       
       // Redirect to dashboard
       navigate('/dashboard');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Error saving service:', error);
-      toast.error('There was an error saving your service. Please try again.');
+      toast.error(error.message || 'There was an error saving your service. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -142,89 +180,24 @@ const ServiceForm: React.FC = () => {
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="title"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Service Title</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Professional House Cleaning" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    A concise title that describes your service
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="category"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Category</FormLabel>
-                  <Select 
-                    onValueChange={field.onChange} 
-                    defaultValue={field.value}
-                  >
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select a category" />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {serviceCategories.map((category) => (
-                        <SelectItem key={category.value} value={category.value}>
-                          {category.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormDescription>
-                    Choose the category that best fits your service
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <FormField
-              control={form.control}
-              name="description"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Description</FormLabel>
-                  <FormControl>
-                    <Textarea 
-                      placeholder="Describe your service in detail..." 
-                      className="min-h-32"
-                      {...field} 
-                    />
-                  </FormControl>
-                  <FormDescription>
-                    Include what clients can expect, your experience, and any requirements
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        {loading && !form.formState.isSubmitting ? (
+          <div className="flex justify-center py-8">
+            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          </div>
+        ) : (
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
               <FormField
                 control={form.control}
-                name="price"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Price ($)</FormLabel>
+                    <FormLabel>Service Title</FormLabel>
                     <FormControl>
-                      <Input type="number" min="0" step="0.01" {...field} />
+                      <Input placeholder="e.g., Professional House Cleaning" {...field} />
                     </FormControl>
                     <FormDescription>
-                      Set your service price in AUD
+                      A concise title that describes your service
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
@@ -233,55 +206,133 @@ const ServiceForm: React.FC = () => {
               
               <FormField
                 control={form.control}
-                name="duration"
+                name="category"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Duration (minutes)</FormLabel>
-                    <FormControl>
-                      <Input type="number" min="15" step="15" {...field} />
-                    </FormControl>
+                    <FormLabel>Category</FormLabel>
+                    <Select 
+                      onValueChange={field.onChange} 
+                      defaultValue={field.value}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select a category" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {serviceCategories.map((category) => (
+                          <SelectItem key={category.value} value={category.value}>
+                            {category.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                     <FormDescription>
-                      Estimated time to complete the service
+                      Choose the category that best fits your service
                     </FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-            </div>
-            
-            <FormField
-              control={form.control}
-              name="location"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Service Location</FormLabel>
-                  <FormControl>
-                    <Input placeholder="e.g., Melbourne, VIC" {...field} />
-                  </FormControl>
-                  <FormDescription>
-                    Where you offer this service (city, region, etc.)
-                  </FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            
-            <Separator />
-            
-            <CardFooter className="flex justify-between px-0">
-              <Button 
-                type="button" 
-                variant="outline" 
-                onClick={() => navigate('/dashboard')}
-              >
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading}>
-                {loading ? 'Saving...' : isEditing ? 'Update Service' : 'Create Service'}
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
+              
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Textarea 
+                        placeholder="Describe your service in detail..." 
+                        className="min-h-32"
+                        {...field} 
+                      />
+                    </FormControl>
+                    <FormDescription>
+                      Include what clients can expect, your experience, and any requirements
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <FormField
+                  control={form.control}
+                  name="price"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Price ($)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="0" step="0.01" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Set your service price in USD
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="duration"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Duration (minutes)</FormLabel>
+                      <FormControl>
+                        <Input type="number" min="15" step="15" {...field} />
+                      </FormControl>
+                      <FormDescription>
+                        Estimated time to complete the service
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              
+              <FormField
+                control={form.control}
+                name="location"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Service Location</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g., Manhattan, NY" {...field} />
+                    </FormControl>
+                    <FormDescription>
+                      Where you offer this service (city, region, etc.)
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              
+              <Separator />
+              
+              <CardFooter className="flex justify-between px-0">
+                <Button 
+                  type="button" 
+                  variant="outline" 
+                  onClick={() => navigate('/dashboard')}
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" disabled={loading}>
+                  {loading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      {isEditing ? 'Updating...' : 'Creating...'}
+                    </>
+                  ) : (
+                    isEditing ? 'Update Service' : 'Create Service'
+                  )}
+                </Button>
+              </CardFooter>
+            </form>
+          </Form>
+        )}
       </CardContent>
     </Card>
   );

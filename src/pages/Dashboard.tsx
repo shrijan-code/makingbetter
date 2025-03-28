@@ -5,28 +5,43 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Calendar, MessageSquare, Briefcase, Clock, UserCheck, DollarSign } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
-// Sample data - in a real app, this would come from your Supabase database
-const mockProviders = [
-  { id: 'p1', name: 'John Smith', service: 'Plumbing', rating: 4.8 },
-  { id: 'p2', name: 'Alice Johnson', service: 'House Cleaning', rating: 4.9 },
-  { id: 'p3', name: 'Robert Davis', service: 'Electrician', rating: 4.7 },
-];
+// Define types for our data
+interface Service {
+  id: string;
+  title: string;
+  price: number;
+  category: string;
+  description: string;
+  bookings_count?: number;
+}
 
-const mockBookings = [
-  { id: 'b1', service: 'House Cleaning', provider: 'Alice Johnson', date: '2023-12-05', status: 'Upcoming' },
-  { id: 'b2', service: 'Plumbing', provider: 'John Smith', date: '2023-12-10', status: 'Confirmed' },
-];
+interface Booking {
+  id: string;
+  service: {
+    title: string;
+  };
+  provider: {
+    name: string;
+  };
+  date: string;
+  status: string;
+}
 
-const mockServices = [
-  { id: 's1', title: 'Basic Plumbing', price: 75, bookings: 12 },
-  { id: 's2', title: 'Advanced Plumbing', price: 120, bookings: 5 },
-  { id: 's3', title: 'Emergency Plumbing', price: 200, bookings: 3 },
-];
+interface Provider {
+  id: string;
+  name: string;
+  services: {
+    title: string;
+  }[];
+  rating?: number;
+}
 
 const Dashboard: React.FC = () => {
-  const { user } = useAuth();
-  const isProvider = user?.role === 'provider';
+  const { user, profile } = useAuth();
+  const isProvider = profile?.role === 'provider';
   
   const [stats, setStats] = useState({
     bookings: 0,
@@ -35,23 +50,106 @@ const Dashboard: React.FC = () => {
     reviews: 0
   });
   
+  const [services, setServices] = useState<Service[]>([]);
+  const [bookings, setBookings] = useState<Booking[]>([]);
+  const [providers, setProviders] = useState<Provider[]>([]);
+  const [loading, setLoading] = useState(true);
+  
   useEffect(() => {
-    // Simulate fetching dashboard data
-    // In a real app, you'd fetch this from Supabase
     const fetchData = async () => {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 500));
-      
-      setStats({
-        bookings: Math.floor(Math.random() * 20),
-        messages: Math.floor(Math.random() * 50),
-        earnings: Math.floor(Math.random() * 5000),
-        reviews: Math.floor(Math.random() * 40),
-      });
+      setLoading(true);
+      try {
+        if (!user) return;
+        
+        // Fetch stats (for now we'll use mock data, but this could be a real API call)
+        setStats({
+          bookings: Math.floor(Math.random() * 20),
+          messages: Math.floor(Math.random() * 50),
+          earnings: Math.floor(Math.random() * 5000),
+          reviews: Math.floor(Math.random() * 40),
+        });
+        
+        // Fetch services if user is a provider
+        if (isProvider) {
+          const { data: servicesData, error: servicesError } = await supabase
+            .from('services')
+            .select('*')
+            .eq('provider_id', user.id);
+            
+          if (servicesError) throw servicesError;
+          setServices(servicesData || []);
+        }
+        
+        // Fetch bookings for both providers and clients
+        let bookingsQuery = supabase
+          .from('bookings')
+          .select(`
+            id,
+            date,
+            status,
+            service:service_id(title),
+            provider:provider_id(name)
+          `);
+          
+        if (isProvider) {
+          bookingsQuery = bookingsQuery.eq('provider_id', user.id);
+        } else {
+          bookingsQuery = bookingsQuery.eq('client_id', user.id);
+        }
+        
+        const { data: bookingsData, error: bookingsError } = await bookingsQuery;
+        if (bookingsError) throw bookingsError;
+        setBookings(bookingsData || []);
+        
+        // If client, fetch recommended providers
+        if (!isProvider) {
+          const { data: providersData, error: providersError } = await supabase
+            .from('profiles')
+            .select(`
+              id,
+              name,
+              services:services(title)
+            `)
+            .eq('role', 'provider')
+            .limit(3);
+            
+          if (providersError) throw providersError;
+          
+          // Add mock ratings for now
+          const providersWithRatings = providersData?.map(provider => ({
+            ...provider,
+            rating: (Math.random() * 2 + 3).toFixed(1),
+          })) || [];
+          
+          setProviders(providersWithRatings);
+        }
+      } catch (error) {
+        console.error('Error fetching dashboard data:', error);
+        toast.error('Failed to load dashboard data');
+      } finally {
+        setLoading(false);
+      }
     };
     
     fetchData();
-  }, []);
+  }, [user, isProvider]);
+
+  // Helper function to format service data for display
+  const formatServiceData = (service: Service) => ({
+    id: service.id,
+    title: service.title,
+    price: service.price,
+    bookings: service.bookings_count || 0
+  });
+
+  // Show loading state if data is being fetched
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -108,17 +206,23 @@ const Dashboard: React.FC = () => {
               <CardDescription>Services you're currently offering</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockServices.map(service => (
-                <div key={service.id} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <h4 className="font-medium">{service.title}</h4>
-                    <p className="text-sm text-muted-foreground">${service.price} • {service.bookings} bookings</p>
+              {services.length > 0 ? (
+                services.map((service) => (
+                  <div key={service.id} className="flex items-center justify-between border-b pb-2">
+                    <div>
+                      <h4 className="font-medium">{service.title}</h4>
+                      <p className="text-sm text-muted-foreground">${service.price} • {service.bookings_count || 0} bookings</p>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/edit-service/${service.id}`}>Edit</Link>
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/edit-service/${service.id}`}>Edit</Link>
-                  </Button>
+                ))
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>You haven't added any services yet.</p>
                 </div>
-              ))}
+              )}
             </CardContent>
             <CardFooter>
               <Button asChild>
@@ -134,19 +238,25 @@ const Dashboard: React.FC = () => {
               <CardDescription>Your upcoming appointments</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockBookings.map(booking => (
-                <div key={booking.id} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <h4 className="font-medium">{booking.service}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      <Clock className="inline h-4 w-4 mr-1" /> {booking.date} • {booking.status}
-                    </p>
+              {bookings.length > 0 ? (
+                bookings.map((booking) => (
+                  <div key={booking.id} className="flex items-center justify-between border-b pb-2">
+                    <div>
+                      <h4 className="font-medium">{booking.service?.title || 'Untitled Service'}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        <Clock className="inline h-4 w-4 mr-1" /> {booking.date} • {booking.status}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/messages`}>Message Client</Link>
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/messages`}>Message Client</Link>
-                  </Button>
+                ))
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>No upcoming bookings.</p>
                 </div>
-              ))}
+              )}
             </CardContent>
             <CardFooter>
               <Button variant="outline" asChild>
@@ -164,29 +274,35 @@ const Dashboard: React.FC = () => {
               <CardDescription>Your upcoming appointments</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockBookings.map(booking => (
-                <div key={booking.id} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <h4 className="font-medium">{booking.service}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      <Briefcase className="inline h-4 w-4 mr-1" /> {booking.provider}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      <Clock className="inline h-4 w-4 mr-1" /> {booking.date} • {booking.status}
-                    </p>
-                  </div>
-                  <div className="flex gap-2">
-                    <Button variant="outline" size="sm" asChild>
-                      <Link to={`/messages`}>Message</Link>
-                    </Button>
-                    {booking.status === 'Completed' && (
-                      <Button size="sm" asChild>
-                        <Link to={`/payment/${booking.id}`}>Pay</Link>
+              {bookings.length > 0 ? (
+                bookings.map((booking) => (
+                  <div key={booking.id} className="flex items-center justify-between border-b pb-2">
+                    <div>
+                      <h4 className="font-medium">{booking.service?.title || 'Untitled Service'}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        <Briefcase className="inline h-4 w-4 mr-1" /> {booking.provider?.name || 'Unknown Provider'}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        <Clock className="inline h-4 w-4 mr-1" /> {booking.date} • {booking.status}
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button variant="outline" size="sm" asChild>
+                        <Link to={`/messages`}>Message</Link>
                       </Button>
-                    )}
+                      {booking.status === 'Completed' && (
+                        <Button size="sm" asChild>
+                          <Link to={`/payment/${booking.id}`}>Pay</Link>
+                        </Button>
+                      )}
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>No upcoming bookings.</p>
                 </div>
-              ))}
+              )}
             </CardContent>
             <CardFooter>
               <Button variant="outline" asChild>
@@ -202,19 +318,27 @@ const Dashboard: React.FC = () => {
               <CardDescription>Top-rated service providers</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              {mockProviders.map(provider => (
-                <div key={provider.id} className="flex items-center justify-between border-b pb-2">
-                  <div>
-                    <h4 className="font-medium">{provider.name}</h4>
-                    <p className="text-sm text-muted-foreground">
-                      {provider.service} • ⭐ {provider.rating}
-                    </p>
+              {providers.length > 0 ? (
+                providers.map((provider) => (
+                  <div key={provider.id} className="flex items-center justify-between border-b pb-2">
+                    <div>
+                      <h4 className="font-medium">{provider.name}</h4>
+                      <p className="text-sm text-muted-foreground">
+                        {provider.services?.length > 0 
+                          ? provider.services[0].title 
+                          : 'Various Services'} • ⭐ {provider.rating}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" asChild>
+                      <Link to={`/booking?provider=${provider.id}`}>Book Now</Link>
+                    </Button>
                   </div>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link to={`/booking?provider=${provider.id}`}>Book Now</Link>
-                  </Button>
+                ))
+              ) : (
+                <div className="text-center py-6 text-muted-foreground">
+                  <p>No providers available at the moment.</p>
                 </div>
-              ))}
+              )}
             </CardContent>
             <CardFooter>
               <Button variant="outline" asChild>

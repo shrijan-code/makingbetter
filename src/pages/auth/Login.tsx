@@ -27,7 +27,7 @@ const formSchema = z.object({
 type LoginFormValues = z.infer<typeof formSchema>;
 
 const Login: React.FC = () => {
-  const { login, loading, user } = useAuth();
+  const { login, loading, user, profile } = useAuth();
   const navigate = useNavigate();
   
   const form = useForm<LoginFormValues>({
@@ -48,6 +48,7 @@ const Login: React.FC = () => {
   const onSubmit = async (data: LoginFormValues) => {
     try {
       await login(data.email, data.password);
+      toast.success('Logged in successfully!');
       navigate('/dashboard');
     } catch (error) {
       console.error('Login error:', error);
