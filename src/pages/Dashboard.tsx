@@ -3,10 +3,11 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, MessageSquare, Briefcase, Clock, UserCheck, DollarSign } from 'lucide-react';
+import { Calendar, MessageSquare, Briefcase, Clock, UserCheck, DollarSign, Loader2 } from 'lucide-react';
 import { useAuth } from '@/contexts/AuthContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
 
 // Define types for our data
 interface Service {
@@ -22,10 +23,13 @@ interface Booking {
   id: string;
   service: {
     title: string;
-  };
+  } | null;
   provider: {
     name: string;
-  };
+  } | null;
+  client: {
+    name: string;
+  } | null;
   date: string;
   status: string;
 }
@@ -35,8 +39,8 @@ interface Provider {
   name: string;
   services: {
     title: string;
-  }[];
-  rating?: number;
+  }[] | null;
+  rating?: string;
 }
 
 const Dashboard: React.FC = () => {
@@ -81,44 +85,54 @@ const Dashboard: React.FC = () => {
         }
         
         // Fetch bookings for both providers and clients
-        let bookingsQuery = supabase
-          .from('bookings')
-          .select(`
-            id,
-            date,
-            status,
-            service:service_id(title),
-            provider:provider_id(name)
-          `);
-          
         if (isProvider) {
-          bookingsQuery = bookingsQuery.eq('provider_id', user.id);
+          // For providers, fetch bookings with client info
+          const { data: bookingsData, error: bookingsError } = await supabase
+            .from('bookings')
+            .select(`
+              id,
+              date,
+              status,
+              service:service_id(title),
+              client:client_id(name)
+            `)
+            .eq('provider_id', user.id);
+            
+          if (bookingsError) throw bookingsError;
+          setBookings(bookingsData as Booking[] || []);
         } else {
-          bookingsQuery = bookingsQuery.eq('client_id', user.id);
+          // For clients, fetch bookings with provider info
+          const { data: bookingsData, error: bookingsError } = await supabase
+            .from('bookings')
+            .select(`
+              id,
+              date,
+              status,
+              service:service_id(title),
+              provider:provider_id(name)
+            `)
+            .eq('client_id', user.id);
+            
+          if (bookingsError) throw bookingsError;
+          setBookings(bookingsData as Booking[] || []);
         }
-        
-        const { data: bookingsData, error: bookingsError } = await bookingsQuery;
-        if (bookingsError) throw bookingsError;
-        setBookings(bookingsData || []);
         
         // If client, fetch recommended providers
         if (!isProvider) {
+          // For now, just fetch providers without trying to join services
           const { data: providersData, error: providersError } = await supabase
             .from('profiles')
-            .select(`
-              id,
-              name,
-              services:services(title)
-            `)
+            .select('id, name')
             .eq('role', 'provider')
             .limit(3);
             
           if (providersError) throw providersError;
           
-          // Add mock ratings for now
+          // Add mock ratings and empty services array for now
           const providersWithRatings = providersData?.map(provider => ({
             ...provider,
             rating: (Math.random() * 2 + 3).toFixed(1),
+            services: [] // Empty array instead of trying to join
           })) || [];
           
           setProviders(providersWithRatings);
@@ -324,7 +338,7 @@ const Dashboard: React.FC = () => {
                     <div>
                       <h4 className="font-medium">{provider.name}</h4>
                       <p className="text-sm text-muted-foreground">
-                        {provider.services?.length > 0 
+                        {provider.services && provider.services.length > 0 
                           ? provider.services[0].title 
                           : 'Various Services'} • ⭐ {provider.rating}
                       </p>

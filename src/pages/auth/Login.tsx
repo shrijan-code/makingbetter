@@ -27,7 +27,7 @@ const formSchema = z.object({
 type LoginFormValues = z.infer<typeof formSchema>;
 
 const Login: React.FC = () => {
-  const { login, loading, user, profile } = useAuth();
+  const { login, loading, user } = useAuth();
   const navigate = useNavigate();
   
   const form = useForm<LoginFormValues>({
