@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -99,14 +100,21 @@ const Dashboard: React.FC = () => {
             
           if (bookingsError) throw bookingsError;
           
-          // Transform data to match Booking interface
-          const formattedBookings: Booking[] = (bookingsData || []).map(booking => ({
-            id: booking.id,
-            date: booking.date,
-            status: booking.status,
-            service: booking.service,
-            client: booking.client
-          }));
+          // Transform data to match Booking interface and handle relationship errors
+          const formattedBookings: Booking[] = (bookingsData || []).map(booking => {
+            // Check if client has an error property (indicating relationship error)
+            const clientData = 'error' in booking.client 
+              ? { name: 'Unknown Client' } 
+              : booking.client;
+              
+            return {
+              id: booking.id,
+              date: booking.date,
+              status: booking.status,
+              service: booking.service,
+              client: clientData
+            };
+          });
           
           setBookings(formattedBookings);
         } else {
@@ -124,14 +132,21 @@ const Dashboard: React.FC = () => {
             
           if (bookingsError) throw bookingsError;
           
-          // Transform data to match Booking interface
-          const formattedBookings: Booking[] = (bookingsData || []).map(booking => ({
-            id: booking.id,
-            date: booking.date,
-            status: booking.status,
-            service: booking.service,
-            provider: booking.provider
-          }));
+          // Transform data to match Booking interface and handle relationship errors
+          const formattedBookings: Booking[] = (bookingsData || []).map(booking => {
+            // Check if provider has an error property (indicating relationship error)
+            const providerData = 'error' in booking.provider 
+              ? { name: 'Unknown Provider' } 
+              : booking.provider;
+              
+            return {
+              id: booking.id,
+              date: booking.date,
+              status: booking.status,
+              service: booking.service,
+              provider: providerData
+            };
+          });
           
           setBookings(formattedBookings);
         }
