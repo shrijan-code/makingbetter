@@ -57,7 +57,7 @@ const Contact = () => {
                 </div>
                 <div>
                   <h3 className="font-medium">Email Us</h3>
-                  <p className="text-muted-foreground">hello@makingbetter.online</p>
+                  <p className="text-muted-foreground">shrijan.bhandari1318@gmail.com</p>
                 </div>
               </div>
               
@@ -73,7 +73,7 @@ const Contact = () => {
           
           <div>
             <EmailSubmissionForm 
-              recipientEmail="hello@makingbetter.online" 
+              recipientEmail="shrijan.bhandari1318@gmail.com" 
               onSubmissionComplete={handleFormSubmission}
             />
           </div>
