@@ -14,6 +14,19 @@ interface EmailData {
   message: string;
 }
 
+interface BookingEmailData {
+  service: string;
+  servicePrice: number;
+  provider: string;
+  date: string;
+  time: string;
+  customerName: string;
+  customerEmail: string;
+  customerPhone: string;
+  customerAddress: string;
+  customerNotes: string;
+}
+
 export const useEmailSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -46,5 +59,43 @@ export const useEmailSubmission = () => {
     }
   };
 
-  return { submitContactEmail, isSubmitting };
+  const submitBookingEmail = async (data: BookingEmailData) => {
+    setIsSubmitting(true);
+    
+    try {
+      // Call the Supabase Edge Function to send the booking email
+      const { data: responseData, error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          name: data.customerName,
+          email: data.customerEmail,
+          subject: `Booking Confirmation: ${data.service} on ${data.date}`,
+          message: `
+Booking Details:
+Service: ${data.service} ($${data.servicePrice})
+Provider: ${data.provider}
+Date: ${data.date}
+Time: ${data.time}
+Customer Phone: ${data.customerPhone}
+Service Address: ${data.customerAddress}
+Special Notes: ${data.customerNotes}
+          `.trim()
+        }
+      });
+
+      if (error) {
+        console.error("Error submitting booking email:", error);
+        throw new Error(error.message || "Failed to submit booking email");
+      }
+
+      console.log("Booking email submission successful:", responseData);
+      return true;
+    } catch (error) {
+      console.error("Error submitting booking email:", error);
+      throw new Error("Failed to submit booking email");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return { submitContactEmail, submitBookingEmail, isSubmitting };
 };
