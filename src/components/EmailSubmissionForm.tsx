@@ -17,6 +17,7 @@ import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Send } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useEmailSubmission } from "@/hooks/useEmailSubmission";
 
 interface EmailSubmissionFormProps {
   recipientEmail?: string;
@@ -34,7 +35,7 @@ const EmailSubmissionForm = ({
   recipientEmail = "hello@makingbetter.online", 
   onSubmissionComplete 
 }: EmailSubmissionFormProps) => {
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const { submitContactEmail, isSubmitting } = useEmailSubmission();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -47,18 +48,17 @@ const EmailSubmissionForm = ({
   });
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
-    setIsSubmitting(true);
-    
-    // For demonstration, log the data
-    console.log("Form data:", { ...values, recipientEmail });
-    
-    // Implementation options:
-    // 1. FormSpree: <form action="https://formspree.io/f/your-form-id" method="POST">
-    // 2. EmailJS or similar service
-    
     try {
-      // Simulating submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      // Log form data for debugging
+      console.log("Submitting form data:", values);
+      
+      // Submit the email using our hook
+      await submitContactEmail({
+        name: values.name,
+        email: values.email,
+        subject: values.subject,
+        message: values.message
+      });
       
       toast({
         title: "Message Sent!",
@@ -73,13 +73,12 @@ const EmailSubmissionForm = ({
         onSubmissionComplete();
       }
     } catch (error) {
+      console.error("Error sending message:", error);
       toast({
         title: "Error",
         description: "There was a problem sending your message. Please try again.",
         variant: "destructive"
       });
-    } finally {
-      setIsSubmitting(false);
     }
   };
 

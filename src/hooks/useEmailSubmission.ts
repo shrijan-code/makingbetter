@@ -1,74 +1,50 @@
 
 import { useState } from "react";
+import { createClient } from '@supabase/supabase-js';
+
+// Initialize Supabase client
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://rlclhjfbbuxwkbbytctb.supabase.co';
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJsY2xoamZiYnV4d2tiYnl0Y3RiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MTM4NTk3NzgsImV4cCI6MjAyOTQzNTc3OH0.8EqPUFrSJmPXNh8RBqtHohCU5YBOblKLSeDY32aK4O8';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 interface EmailData {
-  service: string;
-  servicePrice: number;
-  provider: string;
-  date: string;
-  time: string;
-  customerName: string;
-  customerEmail: string;
-  customerPhone: string;
-  customerAddress: string;
-  customerNotes: string;
+  name: string;
+  email: string;
+  subject: string;
+  message: string;
 }
 
 export const useEmailSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const submitBookingEmail = async (data: EmailData) => {
+  const submitContactEmail = async (data: EmailData) => {
     setIsSubmitting(true);
     
     try {
-      // Email submission method 1: Using a service like EmailJS, Formspree, etc.
-      // This approach works without a backend server
-      const formData = new FormData();
-      
-      // Add recipient - use your personal email or the hello@makingbetter.online address
-      formData.append("to", "hello@makingbetter.online"); // Replace with your personal email if preferred
-      
-      // Add subject
-      formData.append("subject", `New booking request for ${data.service}`);
-      
-      // Format email body
-      const emailBody = `
-        New Booking Details:
-        
-        Service: ${data.service} ($${data.servicePrice.toFixed(2)})
-        Provider: ${data.provider}
-        Date: ${data.date}
-        Time: ${data.time}
-        
-        Customer Information:
-        Name: ${data.customerName}
-        Email: ${data.customerEmail}
-        Phone: ${data.customerPhone}
-        Address: ${data.customerAddress}
-        Notes: ${data.customerNotes}
-      `;
-      
-      formData.append("message", emailBody);
-      
-      // For demonstration, we'll log the data instead of sending it
-      // This would be replaced with actual API call in production
-      console.log("Email would be sent with data:", data);
-      
-      // Note: To implement a real email submission, you would need to:
-      // 1. Set up an email service (FormSpree, EmailJS, etc.)
-      // 2. Replace this section with the appropriate API call
-      
-      // Simulating successful submission
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
+      // Call the Supabase Edge Function to send the email
+      const { data: responseData, error } = await supabase.functions.invoke('send-contact-email', {
+        body: {
+          name: data.name,
+          email: data.email,
+          subject: data.subject,
+          message: data.message
+        }
+      });
+
+      if (error) {
+        console.error("Error submitting email:", error);
+        throw new Error(error.message || "Failed to submit contact email");
+      }
+
+      console.log("Email submission successful:", responseData);
       return true;
     } catch (error) {
       console.error("Error submitting email:", error);
-      throw new Error("Failed to submit booking email");
+      throw new Error("Failed to submit contact email");
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  return { submitBookingEmail, isSubmitting };
+  return { submitContactEmail, isSubmitting };
 };
