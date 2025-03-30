@@ -36,6 +36,7 @@ const EmailSubmissionForm = ({
   onSubmissionComplete 
 }: EmailSubmissionFormProps) => {
   const { submitContactEmail, isSubmitting } = useEmailSubmission();
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,6 +50,8 @@ const EmailSubmissionForm = ({
 
   const handleSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
+      setSubmitError(null);
+      
       // Log form data for debugging
       console.log("Submitting form data:", values);
       
@@ -72,11 +75,12 @@ const EmailSubmissionForm = ({
       if (onSubmissionComplete) {
         onSubmissionComplete();
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error sending message:", error);
+      setSubmitError(error?.message || "There was a problem sending your message. Please try again.");
       toast({
         title: "Error",
-        description: "There was a problem sending your message. Please try again.",
+        description: error?.message || "There was a problem sending your message. Please try again.",
         variant: "destructive"
       });
     }
@@ -88,6 +92,11 @@ const EmailSubmissionForm = ({
         <CardTitle>Send us a message</CardTitle>
       </CardHeader>
       <CardContent>
+        {submitError && (
+          <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded border border-destructive">
+            {submitError}
+          </div>
+        )}
         <Form {...form}>
           <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-4">
             <FormField

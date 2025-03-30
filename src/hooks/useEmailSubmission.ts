@@ -55,7 +55,7 @@ export const useEmailSubmission = () => {
       return true;
     } catch (error) {
       console.error("Error submitting email:", error);
-      throw new Error("Failed to submit contact email");
+      throw error; // Throw the original error for better debugging
     } finally {
       setIsSubmitting(false);
     }
@@ -93,7 +93,7 @@ Special Notes: ${data.customerNotes}
       return true;
     } catch (error) {
       console.error("Error submitting booking email:", error);
-      throw new Error("Failed to submit booking email");
+      throw error; // Throw the original error for better debugging
     } finally {
       setIsSubmitting(false);
     }
