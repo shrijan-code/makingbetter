@@ -47,15 +47,23 @@ export const useEmailSubmission = () => {
       });
 
       if (error) {
-        console.error("Error submitting email:", error);
+        console.error("Supabase function error:", error);
         throw new Error(error.message || "Failed to submit contact email");
       }
 
       console.log("Email submission successful:", responseData);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting email:", error);
-      throw error; // Throw the original error for better debugging
+      let errorMessage = "Failed to submit contact email";
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.error_description) {
+        errorMessage = error.error_description;
+      }
+      
+      throw new Error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }
@@ -65,6 +73,8 @@ export const useEmailSubmission = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("Submitting booking email with data:", data);
+      
       // Call the Supabase Edge Function to send the booking email
       const { data: responseData, error } = await supabase.functions.invoke('send-contact-email', {
         body: {
@@ -85,15 +95,23 @@ Special Notes: ${data.customerNotes}
       });
 
       if (error) {
-        console.error("Error submitting booking email:", error);
+        console.error("Supabase function error:", error);
         throw new Error(error.message || "Failed to submit booking email");
       }
 
       console.log("Booking email submission successful:", responseData);
       return true;
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error submitting booking email:", error);
-      throw error; // Throw the original error for better debugging
+      let errorMessage = "Failed to submit booking email";
+      
+      if (error.message) {
+        errorMessage = error.message;
+      } else if (error.error_description) {
+        errorMessage = error.error_description;
+      }
+      
+      throw new Error(errorMessage);
     } finally {
       setIsSubmitting(false);
     }

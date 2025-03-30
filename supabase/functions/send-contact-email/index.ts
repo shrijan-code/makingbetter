@@ -18,16 +18,23 @@ interface ContactForm {
 }
 
 const handler = async (req: Request): Promise<Response> => {
+  console.log("Edge function received request:", req.method);
+  
   // Handle CORS preflight requests
   if (req.method === "OPTIONS") {
+    console.log("Handling OPTIONS request");
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { name, email, subject, message }: ContactForm = await req.json();
+    const requestData = await req.json();
+    console.log("Request data received:", requestData);
+    
+    const { name, email, subject, message }: ContactForm = requestData;
 
     // Validate input
     if (!name || !email || !subject || !message) {
+      console.error("Missing required fields:", { name, email, subject, message });
       return new Response(
         JSON.stringify({ error: "Missing required fields" }),
         {
@@ -38,6 +45,7 @@ const handler = async (req: Request): Promise<Response> => {
     }
 
     console.log("Sending email with data:", { name, email, subject, message });
+    console.log("Using Resend API key exists:", !!Deno.env.get("RESEND_API_KEY"));
 
     // Send notification email to site owner
     const ownerEmailResponse = await resend.emails.send({
@@ -52,6 +60,8 @@ const handler = async (req: Request): Promise<Response> => {
         <p>${message.replace(/\n/g, "<br>")}</p>
       `,
     });
+
+    console.log("Owner email response:", ownerEmailResponse);
 
     // Send confirmation email to the visitor
     const visitorEmailResponse = await resend.emails.send({
@@ -68,6 +78,8 @@ const handler = async (req: Request): Promise<Response> => {
         <p>Best regards,<br>The Making Better Team</p>
       `,
     });
+
+    console.log("Visitor email response:", visitorEmailResponse);
 
     console.log("Email sent successfully:", {
       owner: ownerEmailResponse,
@@ -88,7 +100,11 @@ const handler = async (req: Request): Promise<Response> => {
   } catch (error: any) {
     console.error("Error in send-contact-email function:", error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ 
+        error: error.message,
+        stack: error.stack,
+        details: "An error occurred while processing your request"
+      }),
       {
         status: 500,
         headers: { "Content-Type": "application/json", ...corsHeaders },

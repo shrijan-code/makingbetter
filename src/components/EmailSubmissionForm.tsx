@@ -63,6 +63,8 @@ const EmailSubmissionForm = ({
         message: values.message
       });
       
+      console.log("Email sent successfully, showing toast notification");
+      
       toast({
         title: "Message Sent!",
         description: "Your message has been sent successfully.",
@@ -77,10 +79,12 @@ const EmailSubmissionForm = ({
       }
     } catch (error: any) {
       console.error("Error sending message:", error);
-      setSubmitError(error?.message || "There was a problem sending your message. Please try again.");
+      const errorMessage = error?.message || "There was a problem sending your message. Please try again.";
+      setSubmitError(errorMessage);
+      
       toast({
         title: "Error",
-        description: error?.message || "There was a problem sending your message. Please try again.",
+        description: errorMessage,
         variant: "destructive"
       });
     }
@@ -94,7 +98,8 @@ const EmailSubmissionForm = ({
       <CardContent>
         {submitError && (
           <div className="mb-4 p-3 bg-destructive/10 text-destructive rounded border border-destructive">
-            {submitError}
+            <p className="font-medium mb-1">Error:</p>
+            <p>{submitError}</p>
           </div>
         )}
         <Form {...form}>
