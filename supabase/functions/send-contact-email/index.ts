@@ -41,7 +41,7 @@ const handler = async (req: Request): Promise<Response> => {
 
     // Send notification email to site owner
     const ownerEmailResponse = await resend.emails.send({
-      from: "Contact Form <onboarding@resend.dev>", // You can change this after verifying your domain with Resend
+      from: "Making Better <onboarding@resend.dev>", // You can change this after verifying your domain with Resend
       to: "shrijan.bhandari1318@gmail.com", // Your email where you want to receive contact messages
       subject: `New Contact Form: ${subject}`,
       html: `

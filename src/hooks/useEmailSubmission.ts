@@ -34,6 +34,8 @@ export const useEmailSubmission = () => {
     setIsSubmitting(true);
     
     try {
+      console.log("Submitting contact email with data:", data);
+      
       // Call the Supabase Edge Function to send the email
       const { data: responseData, error } = await supabase.functions.invoke('send-contact-email', {
         body: {
